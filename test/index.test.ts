@@ -1,4 +1,4 @@
-import {any, map, many, optional, sequence, alpha, regex, success, failure} from '../src';
+import onia, {any, map, many, optional, sequence, alpha, regex, success, failure} from '../src';
 import {assertFailure, assertSuccess} from './utils';
 import assert from 'assert';
 
@@ -152,5 +152,34 @@ describe('onia', () => {
 
             assertSuccess(fn({index: 0, text: 'foobar'}), ['foo', 'bar']);
         });
-    })
+    });
+
+    describe('example', () => {
+        const digit = map(
+            regex(/[0-9]/g, 'digit'),
+            (digit) => parseInt(digit)
+        );
+        const digits = map(
+            many(digit),
+            (digit) => parseInt(digit.join(''))
+        );
+        const whitespace = alpha(' ');
+        const operator = regex(/[+-]/g, 'operator');
+        const term = map(
+            sequence<any>([digits, optional(whitespace), operator, optional(whitespace), digits]),
+            ([left, , operator, , right]) => [left, operator, right],
+        );
+
+        it('should parse simple expresion', () => {
+            const [left, operator, right] = onia('123 + 321', term);
+
+            assert(left === 123);
+            assert(operator === '+');
+            assert(right === 321);
+        });
+
+        it('should throw error', () => {
+            assert.throws(() => onia('foo / bar', term));
+        });
+    });
 });
