@@ -1,0 +1,36 @@
+{
+  "name": "onia",
+  "version": "0.1.0",
+  "description": "small set of monadic parser combinators",
+  "main": "./dist/index.js",
+  "types": "./types/index.d.ts",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc --project tsconfig.prod.json",
+    "watch": "tsc --watch",
+    "test": "mocha -r ts-node/register/transpile-only --full-trace 'test/**/*.ts'",
+    "coverage": "nyc npm test"
+  },
+  "engines": {
+    "node": ">=10.0.0",
+    "npm": ">=6.0.0"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "author": {
+    "name": "Oleg Kamlowski",
+    "email": "oleg.kamlowski@thomann.de"
+  },
+  "license": "MIT",
+  "keywords": [],
+  "devDependencies": {
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.0.1",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  }
+}
