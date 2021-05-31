@@ -35,11 +35,8 @@ const term = map(
     ([left, , operator, , right]) => [left, operator, right],
 );
 
-const [left, operator, right] = onia('123 + 321', term);
-
-// left === 123
-// operator === +
-// right === 321
+const result = onia('123 + 321', term);
+// result === [123, '+', 321]
 ```
 
 ## Licence
