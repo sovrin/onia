@@ -1,4 +1,22 @@
-import onia, {any, map, many, optional, sequence, alpha, regex, success, failure} from '../src';
+import onia, {
+    any,
+    map,
+    many,
+    optional,
+    sequence,
+    alpha,
+    regex,
+    success,
+    failure,
+    int,
+    float,
+    pop,
+    shift,
+    pipe,
+    flatten,
+    join,
+    filter,
+} from '../src';
 import {assertFailure, assertSuccess} from './utils';
 import assert from 'assert';
 
@@ -154,9 +172,176 @@ describe('onia', () => {
         });
     });
 
+    describe('utils', () => {
+        describe('int', () => {
+            const string = map(
+                regex(/.*/g, 'string'),
+                int(),
+            );
+
+            it('should cast value to int', () => {
+                assertSuccess(string({index: 0, text: '0.12'}), 0);
+            });
+        });
+
+        describe('float', () => {
+            const string = map(
+                regex(/.*/g, 'string'),
+                float(),
+            );
+
+            it('should cast value to float', () => {
+                assertSuccess(string({index: 0, text: '0.12'}), 0.12);
+            });
+        });
+
+        describe('shift', () => {
+            const string = map(
+                regex(/\d/g, 'digit'),
+                int(),
+            );
+
+            const term = map(
+                sequence<any>([
+                    string,
+                    string,
+                    string,
+                ]),
+                shift(),
+            );
+
+            it('should get the first element', () => {
+                assertSuccess(term({index: 0, text: '123'}), 1);
+            });
+        });
+
+        describe('pop', () => {
+            const string = map(
+                regex(/\d/g, 'digit'),
+                int(),
+            );
+
+            const term = map(
+                sequence<any>([
+                    string,
+                    string,
+                    string,
+                ]),
+                pop(),
+            );
+
+            it('should get the last element', () => {
+                assertSuccess(term({index: 0, text: '123'}), 3);
+            });
+        });
+
+        describe('pipe', () => {
+            const string = map(
+                regex(/\d/g, 'digit'),
+                int(),
+            );
+
+            const term = map(
+                sequence([
+                    string,
+                    string,
+                    string,
+                ]),
+                pipe(
+                    (v) => v.map((n) => n + 1),
+                    (v) => v.join('_'),
+                ),
+            );
+
+            it('should pipe value to each fn and transform', () => {
+                assertSuccess(term({index: 0, text: '123'}), '2_3_4');
+            });
+        });
+
+        describe('flatten', () => {
+            const character = any([
+                regex(/[a-z]/ig, 'letter'),
+                map(
+                    regex(/\d/g, 'digit'),
+                    int(),
+                ),
+            ]);
+
+            const term = map(
+                sequence([
+                    character,
+                    optional<any>(
+                        many(
+                            map(
+                                sequence<any>([
+                                    character,
+                                ]),
+                                pop(),
+                            ),
+                        ),
+                    ),
+                ]),
+                flatten(),
+            );
+
+            it('should flatten result value', () => {
+                assertSuccess(term({index: 0, text: 'foobar'}), ['f', 'o', 'o', 'b', 'a', 'r']);
+            });
+        });
+
+        describe('join', () => {
+            const letter = regex(/[a-z]/ig, 'letter');
+
+            const digit = map(
+                regex(/\d/g, 'digit'),
+                int(),
+            );
+
+            const character = any([
+                letter,
+                digit,
+            ]);
+
+            const term = map(
+                sequence<any>([
+                    character,
+                    map(
+                        many(character),
+                        join(),
+                    )],
+                ),
+                join(),
+            );
+
+            it('should join result value', () => {
+                assertSuccess(term({index: 0, text: 'foo123bar'}), 'foo123bar');
+            });
+        });
+
+        describe('filter', () => {
+            const string = regex(/\w+/ig, 'string');
+
+            const term = map(
+                sequence<any>([
+                    alpha('{'),
+                    string,
+                    alpha('}'),
+                ]),
+                filter([
+                    '{',
+                    '}',
+                ]),
+            );
+
+            it('should filter out braces', () => {
+                assertSuccess(term({index: 0, text: '{foobar}'}), ['foobar']);
+            });
+        });
+    });
+
     describe('example', () => {
         const digit = map(
-            regex(/[0-9]/g, 'digit'),
+            regex(/\d/g, 'digit'),
             (digit) => parseInt(digit)
         );
         const digits = map(
@@ -170,7 +355,7 @@ describe('onia', () => {
             ([left, , operator, , right]) => [left, operator, right],
         );
 
-        it('should parse simple expresion', () => {
+        it('should parse simple expression', () => {
             const [left, operator, right] = onia('123 + 321', term);
 
             assert(left === 123);
