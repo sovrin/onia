@@ -177,3 +177,13 @@ export {
     alpha,
     regex,
 };
+export {
+    int,
+    float,
+    pop,
+    shift,
+    join,
+    flatten,
+    filter,
+    pipe,
+} from './utils';
