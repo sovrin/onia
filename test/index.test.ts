@@ -320,16 +320,20 @@ describe('onia', () => {
 
         describe('filter', () => {
             const string = regex(/\w+/ig, 'string');
+            const open = alpha('{');
+            const close = alpha('}');
+            const unused = alpha('_');
 
             const term = map(
                 sequence<any>([
-                    alpha('{'),
+                    open,
                     string,
-                    alpha('}'),
+                    close,
                 ]),
                 filter([
                     '{',
-                    '}',
+                    close,
+                    unused
                 ]),
             );
 
