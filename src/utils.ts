@@ -1,3 +1,5 @@
+import {Parser, Success} from './types';
+
 /**
  *
  */
@@ -32,10 +34,35 @@ export const float = () => (number: string) => parseFloat(number);
  *
  * @param values
  */
-export const filter = (values: any[]) => (haystack: any[]) => (
-    haystack.filter(Boolean)
-        .filter(element => !values.includes(element))
-);
+export const filter = (values: (string | Parser<any>)[]) => (haystack: any[]) => {
+    /**
+     *
+     * @param value
+     */
+    const resolve = (value: string | Parser<any>) => {
+        if (typeof value === 'function') {
+            const needle = haystack.map((needle) => value({index: 0, text: needle}))
+                .find((value) => value.success) as Success<any>
+            ;
+
+            if (!needle) {
+                return null;
+            }
+
+            return needle.value;
+        }
+
+        return value;
+    };
+
+    const lookup = values.map(resolve)
+        .filter(Boolean)
+    ;
+
+    return haystack.filter(Boolean)
+        .filter((element) => !lookup.includes(element))
+    ;
+};
 
 /**
  *
