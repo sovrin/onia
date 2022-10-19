@@ -42,6 +42,7 @@ describe('onia', () => {
         it('should parse string', () => {
             const o = alpha('o');
 
+            assert(o.toString() === 'o');
             assertSuccess(o({index: 0, text: 'o'}), 'o');
             assertFailure(o({index: 1, text: 'o'}), 'o');
             assertFailure(o({index: -1, text: 'o'}), 'o');
@@ -53,6 +54,7 @@ describe('onia', () => {
         it('should parse regex', () => {
             const number = regex(/[0-9]/g, 'number');
 
+            assert(number.toString() === (/[0-9]/g).toString());
             assertSuccess(number({index: 0, text: '01'}), '0');
             assertSuccess(number({index: 1, text: '01'}), '1');
             assertFailure(number({index: 0, text: ''}), 'number');
@@ -127,6 +129,15 @@ describe('onia', () => {
             const fn = optional(foo);
 
             assertSuccess(fn({index: 0, text: 'foo'}), 'foo');
+        });
+
+        it('should return number', () => {
+            const fn = optional(map(
+                regex(/\d/g, 'digit'),
+                int(),
+            ));
+
+            assertSuccess(fn({index: 0, text: '0'}), 0);
         });
     });
 
@@ -323,21 +334,40 @@ describe('onia', () => {
             const open = alpha('{');
             const close = alpha('}');
             const unused = alpha('_');
-
-            const term = map(
-                sequence<any>([
-                    open,
-                    string,
-                    close,
-                ]),
-                filter([
-                    '{',
-                    close,
-                    unused
-                ]),
-            );
+            const hashtag = alpha('#');
 
             it('should filter out braces', () => {
+                const term = map(
+                    sequence<any>([
+                        open,
+                        string,
+                        close,
+                    ]),
+                    filter([
+                        '{',
+                        close,
+                        unused
+                    ]),
+                );
+
+                assertSuccess(term({index: 0, text: '{foobar}'}), ['foobar']);
+            });
+
+            it('should filter out braces and ignore order', () => {
+                const term = map(
+                    sequence<any>([
+                        open,
+                        optional(alpha('#')),
+                        string,
+                        close,
+                    ]),
+                    filter([
+                        '{',
+                        close,
+                        hashtag
+                    ]),
+                );
+
                 assertSuccess(term({index: 0, text: '{foobar}'}), ['foobar']);
             });
         });

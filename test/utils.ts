@@ -1,7 +1,11 @@
 import assert from 'assert';
 import {Result} from '../src/types';
 
-const serialize = (value) => JSON.stringify(value);
+/**
+ *
+ * @param value
+ */
+const serialize = (value): string => JSON.stringify(value);
 
 /**
  *
