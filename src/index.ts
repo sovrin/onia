@@ -1,4 +1,5 @@
 import type {Result, Context, Parser, Failure, Success} from './types';
+import {define} from './utils';
 
 /**
  *
@@ -27,14 +28,16 @@ const failure = (context: Context, expected: string): Failure => ({
  * @param match
  */
 const alpha = (match: string): Parser<string> => (
-    ({index, text}) => {
+    define((({index, text}) => {
         const next = index + match.length;
 
         return (text.substring(index, next) === match)
             ? success({text, index: next}, match)
             : failure({text, index}, match)
         ;
-    }
+    }), {
+        toString: () => match,
+    })
 );
 
 /**
@@ -43,7 +46,7 @@ const alpha = (match: string): Parser<string> => (
  * @param expected
  */
 const regex = (regex: RegExp, expected: string): Parser<string> => (
-    ({index, text}) => {
+    define((({index, text}) => {
         regex.lastIndex = index;
         const res = regex.exec(text);
 
@@ -51,7 +54,9 @@ const regex = (regex: RegExp, expected: string): Parser<string> => (
             ? success({text, index: index + res[0].length}, res[0])
             : failure({text, index}, expected)
         ;
-    }
+    }), {
+        toString: () => regex.toString(),
+    })
 );
 
 /**

@@ -1,4 +1,4 @@
-import {Parser, Success} from './types';
+import {Parser} from './types';
 
 /**
  *
@@ -35,31 +35,11 @@ export const float = () => (number: string) => parseFloat(number);
  * @param values
  */
 export const filter = (values: (string | Parser<any>)[]) => (haystack: any[]) => {
-    /**
-     *
-     * @param value
-     */
-    const resolve = (value: string | Parser<any>) => {
-        if (typeof value === 'function') {
-            const needle = haystack.map((needle) => value({index: 0, text: needle}))
-                .find((value) => value.success) as Success<any>
-            ;
-
-            if (!needle) {
-                return null;
-            }
-
-            return needle.value;
-        }
-
-        return value;
-    };
-
-    const lookup = values.map(resolve)
+    const lookup = values.map((value) => value.toString())
         .filter(Boolean)
     ;
 
-    return haystack.filter(Boolean)
+    return haystack.filter((value) => value !== null)
         .filter((element) => !lookup.includes(element))
     ;
 };
@@ -69,3 +49,19 @@ export const filter = (values: (string | Parser<any>)[]) => (haystack: any[]) =>
  * @param fns
  */
 export const pipe = (...fns) => (x) => fns.reduce((y, f) => f(y), x);
+
+/**
+ *
+ * @param parser
+ * @param fns
+ */
+export const define = <T>(parser: T, fns: Record<string, () => any>): T => {
+    for (const key in fns) {
+        const {[key]: value} = fns;
+        Object.defineProperty(parser, key, {
+            value,
+        });
+    }
+
+    return parser;
+};
