@@ -376,6 +376,53 @@ describe('onia', () => {
 
                 assertSuccess(term({index: 0, text: '{foobar}'}), ['foobar']);
             });
+
+            it('should filter out null', () => {
+                const digit = regex(/\d/g, 'digit');
+                const delimiter = alpha(',');
+                const open = alpha('(');
+                const close = alpha(')');
+                const space = optional(
+                    regex(/\s+/g, 'space'),
+                    true
+                );
+                const term = map(
+                    sequence([
+                        open,
+                        space,
+                        optional(digit),
+                        space,
+                        optional<any>(
+                            many(
+                                map(
+                                    sequence([
+                                        delimiter,
+                                        space,
+                                        digit,
+                                        space,
+                                    ]),
+                                    pipe(
+                                        filter([
+                                            delimiter,
+                                        ]),
+                                        pop(),
+                                    ),
+                                ),
+                            ),
+                        ),
+                        close,
+                    ]),
+                    pipe(
+                        filter([
+                            open,
+                            close,
+                        ]),
+                        flatten(),
+                    )
+                );
+
+                assertSuccess(term({index: 0, text: '(1, 2,  3,   4)'}), ['1', '2', '3', '4']);
+            });
         });
     });
 
