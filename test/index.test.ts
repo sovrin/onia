@@ -139,6 +139,12 @@ describe('onia', () => {
 
             assertSuccess(fn({index: 0, text: '0'}), 0);
         });
+
+        it('should drop optional foo', () => {
+            const fn = optional(foo, false);
+
+            assertSuccess(fn({index: 0, text: 'foo'}), null);
+        });
     });
 
     describe('map', () => {
