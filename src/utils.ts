@@ -41,6 +41,7 @@ export const filter = (values: (string | Parser<any>)[]) => (haystack: any[]) =>
 
     return haystack.filter((value) => value !== null)
         .filter((element) => !lookup.includes(element))
+        .filter((element) => element != undefined)
     ;
 };
 
