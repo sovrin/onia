@@ -108,9 +108,15 @@ const any = <T>(parsers: Parser<T>[]): Parser<T> => (
 /**
  *
  * @param parser
+ * @param carry
  */
-const optional = <T>(parser: Parser<T>): Parser<T | null> => (
-    any([parser, context => success(context, null)])
+const optional = <T>(parser: Parser<T>, carry = true): Parser<T | null> => (
+    map(
+        any([parser, context => success(context, null)]),
+        (value) => carry
+            ? value
+            : null,
+    )
 );
 
 /**
