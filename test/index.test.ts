@@ -426,6 +426,18 @@ describe('onia', () => {
         });
     });
 
+    describe('names', () => {
+        it('should return expected parser names', () => {
+            assert.equal(alpha(null).name   , '[Parser alpha]');
+            assert.equal(regex(null).name, '[Parser regex]');
+            assert.equal(sequence(null).name, '[Parser sequence]');
+            assert.equal(any(null).name, '[Parser any]');
+            assert.equal(optional(null).name, '[Parser optional]');
+            assert.equal(many(null).name, '[Parser many]');
+            assert.equal(map(null, null).name, '[Parser map]');
+        });
+    });
+
     describe('example', () => {
         const digit = map(
             regex(/\d/g, 'digit'),
