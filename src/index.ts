@@ -37,6 +37,7 @@ const alpha = (match: string): Parser<string> => (
         ;
     }), {
         toString: () => match,
+        name: '[Parser alpha]'
     })
 );
 
@@ -45,7 +46,7 @@ const alpha = (match: string): Parser<string> => (
  * @param regex
  * @param expected
  */
-const regex = (regex: RegExp, expected: string): Parser<string> => (
+const regex = (regex: RegExp, expected?: string): Parser<string> => (
     define((({index, text}) => {
         regex.lastIndex = index;
         const res = regex.exec(text);
@@ -56,15 +57,15 @@ const regex = (regex: RegExp, expected: string): Parser<string> => (
         ;
     }), {
         toString: () => regex.toString(),
+        name: '[Parser regex]'
     })
 );
-
 /**
  *
  * @param parsers
  */
 const sequence = <T>(parsers: Parser<T>[]): Parser<T[] | T> => (
-    (context) => {
+    define(((context) => {
         const values: T[] = [];
         let next = context;
 
@@ -79,7 +80,9 @@ const sequence = <T>(parsers: Parser<T>[]): Parser<T[] | T> => (
         }
 
         return success(next, values);
-    }
+    }), {
+        name: '[Parser sequence]'
+    })
 );
 
 /**
@@ -87,7 +90,7 @@ const sequence = <T>(parsers: Parser<T>[]): Parser<T[] | T> => (
  * @param parsers
  */
 const any = <T>(parsers: Parser<T>[]): Parser<T> => (
-    (context) => {
+    define(((context) => {
         let next: Result<T> | null = null;
 
         for (const parser of parsers) {
@@ -102,7 +105,9 @@ const any = <T>(parsers: Parser<T>[]): Parser<T> => (
         }
 
         return next;
-    }
+    }), {
+        name: '[Parser any]',
+    })
 );
 
 /**
@@ -111,12 +116,14 @@ const any = <T>(parsers: Parser<T>[]): Parser<T> => (
  * @param carry
  */
 const optional = <T>(parser: Parser<T>, carry = true): Parser<T | null> => (
-    map(
+    define(map(
         any([parser, context => success(context, null)]),
         (value) => carry
             ? value
             : null,
-    )
+    ), {
+        name: '[Parser optional]',
+    })
 );
 
 /**
@@ -124,7 +131,7 @@ const optional = <T>(parser: Parser<T>, carry = true): Parser<T | null> => (
  * @param parser
  */
 const many = <T>(parser: Parser<T>): Parser<T[]> => (
-    (context) => {
+    define(((context) => {
         const values: T[] = [];
         let next = context;
 
@@ -140,7 +147,9 @@ const many = <T>(parser: Parser<T>): Parser<T[]> => (
         }
 
         return success(next, values);
-    }
+    }), {
+        name: '[Parser many]',
+    })
 );
 
 /**
@@ -149,14 +158,16 @@ const many = <T>(parser: Parser<T>): Parser<T[]> => (
  * @param fn
  */
 const map = <A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<A | B> => (
-    (context) => {
+    define(((context) => {
         const res = parser(context);
 
         return res.success
             ? success(res.context, fn(res.value))
             : res
-        ;
-    }
+            ;
+    }), {
+        name: '[Parser map]',
+    })
 );
 
 /**

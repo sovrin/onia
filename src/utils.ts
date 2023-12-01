@@ -56,9 +56,10 @@ export const pipe = (...fns) => (x) => fns.reduce((y, f) => f(y), x);
  * @param parser
  * @param fns
  */
-export const define = <T>(parser: T, fns: Record<string, () => any>): T => {
+export const define = <T>(parser: T, fns: Record<string, (() => any) | string>): T => {
     for (const key in fns) {
         const {[key]: value} = fns;
+
         Object.defineProperty(parser, key, {
             value,
         });
