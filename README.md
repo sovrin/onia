@@ -5,8 +5,6 @@
 [![size][size-src]][size-href]
 [![coverage][coverage-src]][coverage-href]
 [![vulnerabilities][vulnerabilities-src]][vulnerabilities-href]
-[![dependencies][dep-src]][dep-href]
-[![devDependencies][devDep-src]][devDep-href]
 [![License][license-src]][license-href]
 
 > small set of monadic parser combinators.
@@ -52,9 +50,5 @@ MIT License, see [LICENSE](./LICENSE)
 [coverage-href]: https://coveralls.io/github/sovrin/onia?branch=master
 [vulnerabilities-src]: https://snyk.io/test/github/sovrin/onia/badge.svg
 [vulnerabilities-href]: https://snyk.io/test/github/sovrin/onia
-[dep-src]: https://badgen.net/david/dep/sovrin/onia
-[dep-href]: https://badgen.net/david/dep/sovrin/onia
-[devDep-src]: https://badgen.net/david/dev/sovrin/onia
-[devDep-href]: https://badgen.net/david/dev/sovrin/onia
 [license-src]: https://badgen.net/github/license/sovrin/onia
 [license-href]: LICENSE
