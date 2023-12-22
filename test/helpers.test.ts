@@ -246,7 +246,7 @@ describe('onia', () => {
                                         space,
                                         digit,
                                         space,
-                                    ] as const),
+                                    ]),
                                     pipe(
                                         filter([
                                             delimiter,
