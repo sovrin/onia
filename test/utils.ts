@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {Result} from '../src/types';
+import {Result} from '../src';
 
 /**
  *
@@ -21,3 +21,6 @@ export const assertSuccess = <T>(result: Result<T>, expect: T) => assert(result.
  */
 export const assertFailure = <T>(result: Result<T>, expect: string) => assert(result.success === false && serialize(expect) === serialize(result.expected), expect);
 
+export const assertType = <T>(expression: T) => {
+    // Do nothing, the TypeScript compiler handles this for us
+};

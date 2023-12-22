@@ -1,461 +1,419 @@
-import onia, {
-    any,
-    map,
-    many,
-    optional,
-    sequence,
-    alpha,
-    regex,
-    success,
-    failure,
-    int,
-    float,
-    pop,
-    shift,
-    pipe,
-    flatten,
-    join,
-    filter,
-} from '../src';
-import {assertFailure, assertSuccess} from './utils';
 import assert from 'assert';
+import onia, {
+    alpha,
+    any,
+    failure,
+    filter,
+    flatten,
+    float,
+    int,
+    join,
+    expand,
+    many,
+    map,
+    optional,
+    pipe,
+    pop,
+    regex,
+    sequence,
+    shift,
+    success,
+} from '../src';
+import {assertFailure, assertSuccess, assertType} from './utils';
+import {Parser} from "../types";
 
 describe('onia', () => {
-    const foo = alpha('foo');
-    const bar = alpha('bar');
+    const foo = alpha('foo', 'foo');
+    const bar = alpha('bar', 'bar');
 
     describe('success', () => {
-        it('should return expected values', () => {
-            assert(success(null, null).success === true);
-            assert(success(null, 'value').value === 'value');
+        describe('with undefined value', () => {
+            it('should return expected values', () => {
+                const result = success(null, null);
+
+                assert.equal(result.value, null);
+                assert.equal(result.success, true);
+                assert.equal(result.context, null);
+            })
+        });
+
+        describe('with value', () => {
+            it('should return expected values', () => {
+                const result = success(null, 'value');
+
+                assert.equal(result.value, 'value');
+                assert.equal(result.success, true);
+                assert.equal(result.context, null);
+            })
         });
     });
 
     describe('failure', () => {
-        it('should return expected values', () => {
-            assert(failure(null, null).success === false);
-            assert(failure(null, 'value').expected === 'value');
+        describe('with undefined value', () => {
+            it('should return expected values', () => {
+                const result = failure(null, null);
+
+                assert.equal(result.success, false);
+                assert.equal(result.expected, '()');
+                assert.equal(result.context, null);
+            })
         });
+
+        describe('with value', () => {
+            it('should return expected values', () => {
+                const result = failure(null, 'value');
+
+                assert.equal(result.success, false);
+                assert.equal(result.expected, '(value)');
+                assert.equal(result.context, null);
+            })
+        })
     });
 
     describe('alpha', () => {
-        it('should parse string', () => {
-            const o = alpha('o');
+        describe('', () => {
+        })
 
-            assert(o.toString() === 'o');
-            assertSuccess(o({index: 0, text: 'o'}), 'o');
-            assertFailure(o({index: 1, text: 'o'}), 'o');
-            assertFailure(o({index: -1, text: 'o'}), 'o');
-            assertFailure(o({index: 0, text: ''}), 'o');
-        });
+        describe('success', () => {
+            const parser = alpha('o');
+
+            it('should parse string', () => {
+                const result = parser({index: 0, text: 'o'});
+
+                assertSuccess(result, 'o')
+            });
+
+            it('should return stringified value', () => {
+                const result = parser.toString()
+
+                assert.equal(result, 'o');
+            })
+        })
+
+        describe('failure', () => {
+            it('should return expected value', () => {
+                const parser = alpha('o', 'foobar');
+
+                {
+                    const result = parser({index: 1, text: 'o'});
+
+                    assertFailure(result, '[Parser alpha](foobar)');
+                }
+                {
+                    const result = parser({index: -1, text: 'o'});
+
+                    assertFailure(result, '[Parser alpha](foobar)');
+                }
+                {
+                    const result = parser({index: 0, text: ''});
+
+                    assertFailure(result, '[Parser alpha](foobar)');
+                }
+            })
+        })
     });
 
     describe('regex', () => {
-        it('should parse regex', () => {
-            const number = regex(/[0-9]/g, 'number');
+        describe('success', () => {
+            it('should parse regex', () => {
+                const parser = regex(/[0-9]/g);
 
-            assert(number.toString() === (/[0-9]/g).toString());
-            assertSuccess(number({index: 0, text: '01'}), '0');
-            assertSuccess(number({index: 1, text: '01'}), '1');
-            assertFailure(number({index: 0, text: ''}), 'number');
-            assertFailure(number({index: 0, text: 'a'}), 'number');
+                {
+                    const result = parser.toString()
+
+                    assert.equal(result, (/[0-9]/g).toString())
+                }
+                {
+                    const result = parser({index: 0, text: '01'});
+
+                    assertSuccess(result, '0');
+                }
+                {
+                    const result = parser({index: 1, text: '01'});
+
+                    assertSuccess(result, '1');
+                }
+            })
         });
+
+        describe('failure', () => {
+            it('should return expected value', () => {
+                const parser = regex(/[0-9]/g, 'number');
+
+                {
+                    const result = parser({index: 0, text: ''});
+
+                    assertFailure(result, '[Parser regex](number)');
+                }
+                {
+                    const result = parser({index: 0, text: 'a'});
+
+                    assertFailure(result, '[Parser regex](number)');
+                }
+            })
+        })
     });
 
     describe('any', () => {
-        it('should parse nothing', () => {
-            const fn = any([]);
+        describe('success', () => {
+            it('should parse first', () => {
+                const parser = any([foo]);
+                const result = parser({index: 0, text: 'foo'});
 
-            assert(fn({index: 0, text: 'foo'}) === null);
-        });
+                assertSuccess(result, 'foo');
+            });
 
-        it('should parse first', () => {
+            it('should parse second', () => {
+                const parser = any([foo, bar]);
+                const result = parser({index: 0, text: 'bar'});
 
-            const fn = any([foo]);
+                assertSuccess(result, 'bar');
+            });
 
-            assertSuccess(fn({index: 0, text: 'foo'}), 'foo');
-        });
+            it('should parse first of two', () => {
+                const parser = any([foo, bar]);
+                const result = parser({index: 0, text: 'foo bar'});
 
-        it('should parse second', () => {
-            const fn = any([foo, bar]);
+                assertSuccess(result, 'foo');
+            });
+        })
+        describe('failure', () => {
+            it('should parse nothing', () => {
+                const parser = any([], 'nothing');
+                const result = parser({index: 0, text: 'foo'});
 
-            assertSuccess(fn({index: 0, text: 'bar'}), 'bar');
-        });
+                assertFailure(result, '[Parser any](nothing)');
+            });
 
-        it('should parse first of two', () => {
-            const fn = any([foo, bar]);
+            it('should parse none', () => {
+                const parser = any([bar, foo], 'bar foo');
+                const result = parser({index: 1, text: 'foo bar'});
 
-            assertSuccess(fn({index: 0, text: 'foo bar'}), 'foo');
-        });
-
-        it('should parse none', () => {
-            const fn = any([bar, foo]);
-
-            assertFailure(fn({index: 1, text: 'foo bar'}), 'bar');
-        });
+                assertFailure(result, '[Parser any](bar foo)');
+            });
+        })
     });
 
     describe('many', () => {
-        it('should parse none', () => {
-            const fn = many(foo);
+        describe('success', () => {
+            it('should parse none', () => {
+                const parser = many(foo);
+                const result = parser({index: 0, text: ''});
 
-            assertSuccess(fn({index: 0, text: ''}), []);
+                assertSuccess(result, []);
+            });
+
+            it('should parse one', () => {
+                const parser = many(foo);
+                const result = parser({index: 0, text: 'foo'});
+
+                assertSuccess(result, ['foo']);
+            });
         });
 
-        it('should parse one', () => {
-            const fn = many(foo);
+        describe('failure', () => {
+            it('should parse several', () => {
+                const parser = many(foo);
 
-            assertSuccess(fn({index: 0, text: 'foo'}), ['foo']);
-        });
+                {
+                    const result = parser({index: 0, text: 'foofoofoo'});
 
-        it('should parse several', () => {
-            const fn = many(foo);
+                    assertSuccess(result, ['foo', 'foo', 'foo']);
+                }
+                {
+                    const result = parser({index: 1, text: 'foofoofoo'});
 
-            assertSuccess(fn({index: 0, text: 'foofoofoo'}), ['foo', 'foo', 'foo']);
-            assertSuccess(fn({index: 1, text: 'foofoofoo'}), []);
-            assertSuccess(fn({index: 0, text: 'bar'}), []);
-            assertSuccess(fn({index: 0, text: 'foobar'}), ['foo']);
+                    assertSuccess(result, []);
+                }
+                {
+                    const result = parser({index: 0, text: 'bar'});
+
+                    assertSuccess(result, []);
+                }
+                {
+                    const result = parser({index: 0, text: 'foobar'});
+
+                    assertSuccess(result, ['foo']);
+                }
+            })
         });
     });
 
     describe('optional', () => {
-        it('should return null', () => {
-            const fn = optional(foo);
+        describe('success', () => {
+            it('should return null', () => {
+                const parser = optional(foo);
+                const result = parser({index: 0, text: ''});
 
-            assertSuccess(fn({index: 0, text: ''}), null);
+                assertSuccess(result, null);
+            });
+
+            it('should return foo', () => {
+                const parser = optional(foo);
+                const result = parser({index: 0, text: 'foo'});
+
+                assertSuccess(result, 'foo');
+            });
+
+            it('should return number', () => {
+                const parser = optional(map(
+                    regex(/\d/g, 'digit'),
+                    int(),
+                ));
+                const result = parser({index: 0, text: '0'});
+
+                assertSuccess(result, 0);
+            });
+
+            it('should drop optional foo', () => {
+                const parser = optional(foo, false);
+                const result = parser({index: 0, text: 'foo'});
+
+                assertSuccess(result, null);
+            });
         });
-
-        it('should return foo', () => {
-            const fn = optional(foo);
-
-            assertSuccess(fn({index: 0, text: 'foo'}), 'foo');
-        });
-
-        it('should return number', () => {
-            const fn = optional(map(
-                regex(/\d/g, 'digit'),
-                int(),
-            ));
-
-            assertSuccess(fn({index: 0, text: '0'}), 0);
-        });
-
-        it('should drop optional foo', () => {
-            const fn = optional(foo, false);
-
-            assertSuccess(fn({index: 0, text: 'foo'}), null);
-        });
+        describe('failure', () => {
+            // can't fail?
+        })
     });
 
     describe('map', () => {
-        it('should map nothing', () => {
-            let v;
-            const fn = map(foo, (val) => {
-                v = val;
-            })
+        describe('success', () => {
+            it('should map foo', () => {
+                let v = '';
+                const parser = map(foo, (val) => {
+                    v = val;
+                })
+                const result = parser({index: 0, text: 'foo'});
 
-            assertFailure(fn({index: 0, text: ''}), 'foo');
-            assert(v === undefined);
+                assertSuccess(result, undefined);
+                assert(v === 'foo');
+            });
         });
 
-        it('should map foo', () => {
-            let v = '';
-            const fn = map(foo, (val) => {
-                v = val;
-            })
+        describe('failure', () => {
+            it('should map nothing', () => {
+                let v: unknown;
+                const parser = map(foo, (val) => {
+                    v = val;
+                }, 'nothing')
+                const result = parser({index: 0, text: ''});
 
-            assertSuccess(fn({index: 0, text: 'foo'}), undefined);
-            assert(v === 'foo');
-        });
+                assertFailure(result, '[Parser map](nothing, [Parser alpha](foo))');
+                assert(v === undefined);
+            });
+
+            it('should return expected values', () => {
+                const parser = map(
+                    foo,
+                    () => {
+                        throw new Error('not implemented')
+                    },
+                    'foobar'
+                );
+                const result = parser({index: 0, text: 'bar'});
+
+                assertFailure(result, '[Parser map](foobar, [Parser alpha](foo))');
+            });
+        })
     });
 
     describe('sequence', () => {
-        it('should sequence nothing', () => {
-            const fn = sequence([]);
+        describe('success', () => {
+            it('should sequence nothing', () => {
+                const fn = sequence([]);
+                const result = fn({index: 0, text: 'foo'});
 
-            assertSuccess(fn({index: 0, text: 'foo'}), []);
-        });
+                assertSuccess(result, []);
+            });
 
-        it('should fail at incomplete sequence', () => {
-            const fn = sequence([foo, bar]);
+            it('should sequence strings', () => {
+                const fn = sequence([foo, bar]);
+                const result = fn({index: 0, text: 'foobar'});
 
-            assertFailure(fn({index: 0, text: 'foo'}), 'bar');
-        });
+                assertSuccess(result, ['foo', 'bar']);
+            });
 
-        it('should sequence strings', () => {
-            const fn = sequence([foo, bar]);
+            it('should return expected values', () => {
+                const fn = sequence([foo, bar]);
+                const result = fn({index: 0, text: 'foo'});
 
-            assertSuccess(fn({index: 0, text: 'foobar'}), ['foo', 'bar']);
-        });
-    });
-
-    describe('utils', () => {
-        describe('int', () => {
-            const string = map(
-                regex(/.*/g, 'string'),
-                int(),
-            );
-
-            it('should cast value to int', () => {
-                assertSuccess(string({index: 0, text: '0.12'}), 0);
+                assert(result.success === false);
+                assert(result.expected === '[Parser sequence]([Parser alpha](bar))');
             });
         });
 
-        describe('float', () => {
-            const string = map(
-                regex(/.*/g, 'string'),
-                float(),
-            );
+        describe('failure', () => {
+            it('should fail at incomplete sequence', () => {
+                const fn = sequence([foo, bar], 'asa');
+                const result = fn({index: 0, text: 'foo'});
 
-            it('should cast value to float', () => {
-                assertSuccess(string({index: 0, text: '0.12'}), 0.12);
-            });
-        });
-
-        describe('shift', () => {
-            const string = map(
-                regex(/\d/g, 'digit'),
-                int(),
-            );
-
-            const term = map(
-                sequence<any>([
-                    string,
-                    string,
-                    string,
-                ]),
-                shift(),
-            );
-
-            it('should get the first element', () => {
-                assertSuccess(term({index: 0, text: '123'}), 1);
-            });
-        });
-
-        describe('pop', () => {
-            const string = map(
-                regex(/\d/g, 'digit'),
-                int(),
-            );
-
-            const term = map(
-                sequence<any>([
-                    string,
-                    string,
-                    string,
-                ]),
-                pop(),
-            );
-
-            it('should get the last element', () => {
-                assertSuccess(term({index: 0, text: '123'}), 3);
-            });
-        });
-
-        describe('pipe', () => {
-            const string = map(
-                regex(/\d/g, 'digit'),
-                int(),
-            );
-
-            const term = map(
-                sequence([
-                    string,
-                    string,
-                    string,
-                ]),
-                pipe(
-                    (v) => v.map((n) => n + 1),
-                    (v) => v.join('_'),
-                ),
-            );
-
-            it('should pipe value to each fn and transform', () => {
-                assertSuccess(term({index: 0, text: '123'}), '2_3_4');
-            });
-        });
-
-        describe('flatten', () => {
-            const character = any([
-                regex(/[a-z]/ig, 'letter'),
-                map(
-                    regex(/\d/g, 'digit'),
-                    int(),
-                ),
-            ]);
-
-            const term = map(
-                sequence([
-                    character,
-                    optional<any>(
-                        many(
-                            map(
-                                sequence<any>([
-                                    character,
-                                ]),
-                                pop(),
-                            ),
-                        ),
-                    ),
-                ]),
-                flatten(),
-            );
-
-            it('should flatten result value', () => {
-                assertSuccess(term({index: 0, text: 'foobar'}), ['f', 'o', 'o', 'b', 'a', 'r']);
-            });
-        });
-
-        describe('join', () => {
-            const letter = regex(/[a-z]/ig, 'letter');
-
-            const digit = map(
-                regex(/\d/g, 'digit'),
-                int(),
-            );
-
-            const character = any([
-                letter,
-                digit,
-            ]);
-
-            const term = map(
-                sequence<any>([
-                    character,
-                    map(
-                        many(character),
-                        join(),
-                    )],
-                ),
-                join(),
-            );
-
-            it('should join result value', () => {
-                assertSuccess(term({index: 0, text: 'foo123bar'}), 'foo123bar');
-            });
-        });
-
-        describe('filter', () => {
-            const string = regex(/\w+/ig, 'string');
-            const open = alpha('{');
-            const close = alpha('}');
-            const unused = alpha('_');
-            const hashtag = alpha('#');
-
-            it('should filter out braces', () => {
-                const term = map(
-                    sequence<any>([
-                        open,
-                        string,
-                        close,
-                    ]),
-                    filter([
-                        '{',
-                        close,
-                        unused
-                    ]),
-                );
-
-                assertSuccess(term({index: 0, text: '{foobar}'}), ['foobar']);
-            });
-
-            it('should filter out braces and ignore order', () => {
-                const term = map(
-                    sequence<any>([
-                        open,
-                        optional(alpha('#')),
-                        string,
-                        close,
-                    ]),
-                    filter([
-                        '{',
-                        close,
-                        hashtag
-                    ]),
-                );
-
-                assertSuccess(term({index: 0, text: '{foobar}'}), ['foobar']);
-            });
-
-            it('should filter out null', () => {
-                const digit = regex(/\d/g, 'digit');
-                const delimiter = alpha(',');
-                const open = alpha('(');
-                const close = alpha(')');
-                const space = optional(
-                    regex(/\s+/g, 'space'),
-                    true
-                );
-                const term = map(
-                    sequence([
-                        open,
-                        space,
-                        optional(digit),
-                        space,
-                        optional<any>(
-                            many(
-                                map(
-                                    sequence([
-                                        delimiter,
-                                        space,
-                                        digit,
-                                        space,
-                                    ]),
-                                    pipe(
-                                        filter([
-                                            delimiter,
-                                        ]),
-                                        pop(),
-                                    ),
-                                ),
-                            ),
-                        ),
-                        close,
-                    ]),
-                    pipe(
-                        filter([
-                            open,
-                            close,
-                        ]),
-                        flatten(),
-                    )
-                );
-
-                assertSuccess(term({index: 0, text: '(1, 2,  3,   4)'}), ['1', '2', '3', '4']);
+                assertFailure(result, '[Parser sequence](asa, [Parser alpha](bar))');
             });
         });
     });
 
     describe('names', () => {
         it('should return expected parser names', () => {
-            assert.equal(alpha(null).name   , '[Parser alpha]');
-            assert.equal(regex(null).name, '[Parser regex]');
-            assert.equal(sequence(null).name, '[Parser sequence]');
-            assert.equal(any(null).name, '[Parser any]');
-            assert.equal(optional(null).name, '[Parser optional]');
-            assert.equal(many(null).name, '[Parser many]');
-            assert.equal(map(null, null).name, '[Parser map]');
+            {
+                const result = alpha(null);
+
+                assert.equal(result.name, '[Parser alpha]');
+            }
+            {
+                const result = regex(null);
+
+                assert.equal(result.name, '[Parser regex]');
+            }
+            {
+                const result = sequence(null);
+
+                assert.equal(result.name, '[Parser sequence]');
+            }
+            {
+                const result = any(null);
+
+                assert.equal(result.name, '[Parser any]');
+            }
+            {
+                const result = optional(null);
+
+                assert.equal(result.name, '[Parser optional]');
+            }
+            {
+                const result = many(null);
+
+                assert.equal(result.name, '[Parser many]');
+            }
+            {
+                const result = map(null, null);
+
+                assert.equal(result.name, '[Parser map]');
+            }
         });
     });
 
     describe('example', () => {
         const digit = map(
             regex(/\d/g, 'digit'),
-            (digit) => parseInt(digit)
+            (digit) => parseInt(digit),
+            'digit'
         );
         const digits = map(
             many(digit),
-            (digit) => parseInt(digit.join(''))
+            (digit) => parseInt(digit.join('')),
+            'digits'
         );
-        const whitespace = alpha(' ');
+        const whitespace = alpha(' ', 'whitespace');
         const operator = regex(/[+-]/g, 'operator');
-        const term = map(
-            sequence<any>([digits, optional(whitespace), operator, optional(whitespace), digits]),
-            ([left, , operator, , right]) => [left, operator, right],
+        const expression = map(
+            sequence([digits, optional(whitespace), operator, optional(whitespace), digits] as const),
+            ([left, , operator, , right]) => [left, operator, right] as const,
+            'expression'
         );
 
         it('should parse simple expression', () => {
-            const [left, operator, right] = onia('123 + 321', term);
+            const [left, operator, right] = onia('123 + 321', expression);
 
             assert(left === 123);
             assert(operator === '+');
@@ -463,7 +421,7 @@ describe('onia', () => {
         });
 
         it('should throw error', () => {
-            assert.throws(() => onia('foo / bar', term));
+            assert.throws(() => onia('foo / bar', expression));
         });
     });
 });
