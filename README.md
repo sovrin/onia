@@ -15,27 +15,34 @@ $ npm i onia
 ```
 
 ## Usage
-```js
+```ts
 import onia, {regex, alpha, map, many, sequence, optional} from 'onia';
 
 const digit = map(
-    regex(/[0-9]/g, 'digit'),
-    (digit) => parseInt(digit)
+    regex(/\d/g, 'digit'),
+    (digit) => parseInt(digit),
+    'digit'
 );
 const digits = map(
     many(digit),
-    (digit) => parseInt(digit.join(''))
+    (digit) => parseInt(digit.join('')),
+    'digits'
 );
-const whitespace = alpha(' ');
+const whitespace = alpha(' ', 'whitespace');
 const operator = regex(/[+-]/g, 'operator');
-const term = map(
-    sequence<any>([digits, optional(whitespace), operator, optional(whitespace), digits]),
-    ([left, , operator, , right]) => [left, operator, right],
+const expression = map(
+    sequence([digits, optional(whitespace), operator, optional(whitespace), digits] as const),
+    ([left, , operator, , right]) => [left, operator, right] as const,
+    'expression'
 );
+
 
 const result = onia('123 + 321', term);
 // result === [123, '+', 321]
 ```
+
+## Disclaimer
+This project is still in early development and is subject to change.
 
 ## Licence
 MIT License, see [LICENSE](./LICENSE)
