@@ -17,7 +17,7 @@ import {
     shift,
 } from '../src';
 import {assertType} from './utils';
-import {Parser} from "../types";
+import {Parser} from "../src";
 
 describe('onia', () => {
     describe('types', () => {

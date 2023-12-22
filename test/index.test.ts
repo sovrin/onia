@@ -3,24 +3,15 @@ import onia, {
     alpha,
     any,
     failure,
-    filter,
-    flatten,
-    float,
     int,
-    join,
-    expand,
     many,
     map,
     optional,
-    pipe,
-    pop,
     regex,
     sequence,
-    shift,
     success,
 } from '../src';
-import {assertFailure, assertSuccess, assertType} from './utils';
-import {Parser} from "../types";
+import {assertFailure, assertSuccess} from './utils';
 
 describe('onia', () => {
     const foo = alpha('foo', 'foo');
