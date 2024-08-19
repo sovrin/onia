@@ -1,11 +1,6 @@
 import {Context, Failure, Success} from './types';
 
-/**
- *
- * @param context
- * @param value
- */
-export function success<T> (context: Context, value: T): Success<T> {
+export function success<T>(context: Context, value: T): Success<T> {
     return ({
         success: true,
         value,
@@ -13,18 +8,12 @@ export function success<T> (context: Context, value: T): Success<T> {
     });
 }
 
-/**
- *
- * @param context
- * @param expected
- */
-export function failure (context: Context, expected: string | Array<string>): Failure {
+export function failure(context: Context, expected: string | Array<string>): Failure {
     const {name} = this || {name: ''};
 
     expected = Array.isArray(expected)
         ? expected
-        : [expected]
-    ;
+        : [expected];
 
     expected = `${name}(${expected.filter(Boolean).join(', ')})`;
 

@@ -1,13 +1,8 @@
-import {Result, Success} from './types';
+import type {Result, Success} from './types';
 
-/**
- *
- * @param parser
- * @param fns
- */
-export const define = <T>(parser: T, fns: Record<string, (() => unknown) | string>): T => {
-    for (const key in fns) {
-        const {[key]: value} = fns;
+export const define = <T>(parser: T, record: Record<string, (() => unknown) | string>): T => {
+    for (const key in record) {
+        const {[key]: value} = record;
 
         Object.defineProperty(parser, key, {
             value,
@@ -17,10 +12,6 @@ export const define = <T>(parser: T, fns: Record<string, (() => unknown) | strin
     return parser;
 };
 
-/**
- *
- * @param result
- */
 export const isSuccess = <T>(result: Result<T>): result is Success<T> => (
     result.success === true
 );

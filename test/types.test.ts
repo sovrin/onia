@@ -1,4 +1,4 @@
-import {
+import onia, {
     alpha,
     any,
     filter,
@@ -18,6 +18,7 @@ import {
 } from '../src';
 import {assertType} from './utils';
 import {Parser} from "../src";
+import {isSuccess} from "../src/utils";
 
 describe('onia', () => {
     describe('types', () => {
@@ -28,7 +29,23 @@ describe('onia', () => {
             int(),
         );
 
+        describe('utils', () => {
+            it('should pass generic type check', () => {
+                const result = string({index: 0, text: 'foobar'});
+
+                assertType(
+                    isSuccess<string>(result)
+                )
+            })
+        });
+
         describe('parsers', () => {
+            it('should pass generic type check', () => {
+                assertType<string>(
+                    onia<string>('string', string)
+                )
+            });
+
             it('should pass type check', () => {
                 assertType<Parser<string>>(
                     string
@@ -116,10 +133,8 @@ describe('onia', () => {
                 const bar = alpha('bar');
 
                 sequence([
-
                     optional(foo),
-                ]),
-
+                ]);
 
                 assertType<(number | string)[]>(
                     flatten()([

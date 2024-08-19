@@ -1,18 +1,21 @@
 {
+  "check-coverage": true,
   "extension": [
     ".ts"
   ],
-  "include" :[
+  "include": [
     "src/**/*.ts"
   ],
   "exclude": [
-    "dist",
-    "test",
-    "**/*.d.ts"
+    "src/tests/**/*.*"
   ],
   "reporter": [
     "html",
     "lcov",
     "text-summary"
+  ],
+  "sourceMap": true,
+  "require": [
+    "ts-node/register"
   ]
 }
