@@ -15,6 +15,8 @@ $ npm i onia
 ```
 
 ## Usage
+### Simple example
+
 ```ts
 import onia, {regex, alpha, map, many, sequence, optional} from 'onia';
 
@@ -36,9 +38,67 @@ const expression = map(
     'expression'
 );
 
-
 const result = onia('123 + 321', term);
 // result === [123, '+', 321]
+```
+
+### Complex example
+naive calculator parser adhering to the order of operations.
+
+```ts
+const digit = map(
+    regex(/\d*\.?\d*/g, 'digit'),
+    (digit) => parseFloat(digit),
+    'digit'
+);
+const whitespace = optional(alpha(' ', 'whitespace'), false);
+const operator = regex(/[+\-*/]/g, 'operator');
+const expression = lazy<number>(() => map(
+    sequence([
+        term,
+        many(sequence([whitespace, operator, whitespace, term] as const, 'expression'))
+    ] as const),
+    ([first, rest]) => rest.reduce((acc, [, op, , next]) => {
+        if (op === '+') return acc + parseFloat(next as any);
+        if (op === '-') return acc - parseFloat(next as any);
+
+        return acc;
+    }, first as number),
+    'expression'
+));
+const parentheses = lazy(() => {
+    const sequenceParser = sequence([
+        alpha('('),
+        expression,
+        alpha(')')
+    ] as const);
+
+    const mappedParser: Parser<number> = map(
+        sequenceParser,
+        ([, expr,]) => parseFloat(expr as any) as number,
+        'parentheses'
+    );
+
+    return mappedParser;
+});
+const term = map(
+    sequence([
+        any([parentheses, digit] as const),
+        many(sequence([whitespace, operator, whitespace, any([parentheses, digit] as const)] as const, 'term'))
+    ] as const),
+    ([first, rest]) => rest.reduce((acc, [, op, , next]) => {
+        if (op === '*') return acc * parseFloat(next as any);
+        if (op === '/') return acc / parseFloat(next as any);
+        if (op === '+') return acc + parseFloat(next as any);
+        if (op === '-') return acc - parseFloat(next as any);
+
+        return acc;
+    }, first as number),
+    'term'
+);
+const result = onia('(2 * (3 + 4)) - (5 / (2 + 3))', expression);
+// result === 13
+
 ```
 
 ## Disclaimer

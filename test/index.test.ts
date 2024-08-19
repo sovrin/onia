@@ -4,6 +4,7 @@ import onia, {
     any,
     failure,
     int,
+    lazy,
     many,
     map,
     optional,
@@ -12,6 +13,7 @@ import onia, {
     success,
 } from '../src';
 import {assertFailure, assertSuccess} from './utils';
+import {Context, Failure, Parser, Result, Success} from "../types";
 
 describe('onia', () => {
     const foo = alpha('foo', 'foo');
@@ -327,7 +329,7 @@ describe('onia', () => {
 
             it('should return expected values', () => {
                 const fn = sequence([foo, bar]);
-                const result = fn({index: 0, text: 'foo'});
+                const result = fn({index: 0, text: 'foo'}) as Failure;
 
                 assert(result.success === false);
                 assert(result.expected === '[Parser sequence]([Parser alpha](bar))');
@@ -341,6 +343,38 @@ describe('onia', () => {
 
                 assertFailure(result, '[Parser sequence](asa, [Parser alpha](bar))');
             });
+        });
+    });
+
+    describe('lazy', () => {
+        it('should delay parser evaluation', () => {
+            let parserInvoked = false;
+            const mockParser: Parser<string> = (context: Context): Result<string> => {
+                parserInvoked = true;
+                return {success: true, value: 'test', context};
+            };
+
+            const lazyParser = lazy(() => mockParser);
+            assert.strictEqual(parserInvoked, false, 'Parser should not be invoked yet');
+
+            const result = lazyParser({text: '', index: 0}) as Success<string>;
+            assert.strictEqual(parserInvoked, true, 'Parser should have been invoked');
+            assert.strictEqual(result.success, true);
+            assert.strictEqual(result.value, 'test');
+        });
+
+        it('should create the parser only once', () => {
+            let creationCount = 0;
+            const mockParserFactory = () => {
+                creationCount++;
+                return (context: Context): Result<string> => ({success: true, value: 'test', context});
+            };
+
+            const lazyParser = lazy(mockParserFactory);
+            lazyParser({text: '', index: 0});
+            lazyParser({text: '', index: 1});
+
+            assert.strictEqual(creationCount, 1, 'Parser should be created only once');
         });
     });
 
@@ -385,34 +419,102 @@ describe('onia', () => {
     });
 
     describe('example', () => {
-        const digit = map(
-            regex(/\d/g, 'digit'),
-            (digit) => parseInt(digit),
-            'digit'
-        );
-        const digits = map(
-            many(digit),
-            (digit) => parseInt(digit.join('')),
-            'digits'
-        );
-        const whitespace = alpha(' ', 'whitespace');
-        const operator = regex(/[+-]/g, 'operator');
-        const expression = map(
-            sequence([digits, optional(whitespace), operator, optional(whitespace), digits] as const),
-            ([left, , operator, , right]) => [left, operator, right] as const,
-            'expression'
-        );
+        describe('simple', () => {
+            const digit = map(
+                regex(/\d/g, 'digit'),
+                (digit) => parseInt(digit),
+                'digit'
+            );
+            const digits = map(
+                many(digit),
+                (digit) => parseInt(digit.join('')),
+                'digits'
+            );
+            const whitespace = alpha(' ', 'whitespace');
+            const operator = regex(/[+-]/g, 'operator');
+            const expression = map(
+                sequence([digits, optional(whitespace), operator, optional(whitespace), digits] as const),
+                ([left, , operator, , right]) => [left, operator, right] as const,
+                'expression'
+            );
 
-        it('should parse simple expression', () => {
-            const [left, operator, right] = onia('123 + 321', expression);
+            it('should parse simple expression', () => {
+                const [left, operator, right] = onia('123 + 321', expression);
 
-            assert(left === 123);
-            assert(operator === '+');
-            assert(right === 321);
+                assert(left === 123);
+                assert(operator === '+');
+                assert(right === 321);
+            });
+
+            it('should throw error', () => {
+                assert.throws(() => onia('foo / bar', expression));
+            });
         });
 
-        it('should throw error', () => {
-            assert.throws(() => onia('foo / bar', expression));
+        describe('complex', () => {
+            const digit = map(
+                regex(/\d*\.?\d*/g, 'digit'),
+                (digit) => parseFloat(digit),
+                'digit'
+            );
+            const whitespace = optional(alpha(' ', 'whitespace'), false);
+            const operator = regex(/[+\-*/]/g, 'operator');
+            const expression = lazy<number>(() => map(
+                sequence([
+                    term,
+                    many(sequence([whitespace, operator, whitespace, term] as const, 'expression'))
+                ] as const),
+                ([first, rest]) => rest.reduce((acc, [, op, , next]) => {
+                    if (op === '+') return acc + parseFloat(next as any);
+                    if (op === '-') return acc - parseFloat(next as any);
+
+                    return acc;
+                }, first as number),
+                'expression'
+            ));
+            const parentheses = lazy(() => {
+                const sequenceParser = sequence([
+                    alpha('('),
+                    expression,
+                    alpha(')')
+                ] as const);
+
+                const mappedParser: Parser<number> = map(
+                    sequenceParser,
+                    ([, expr,]) => parseFloat(expr as any) as number,
+                    'parentheses'
+                );
+
+                return mappedParser;
+            });
+            const term = map(
+                sequence([
+                    any([parentheses, digit] as const),
+                    many(sequence([whitespace, operator, whitespace, any([parentheses, digit] as const)] as const, 'term'))
+                ] as const),
+                ([first, rest]) => rest.reduce((acc, [, op, , next]) => {
+                    if (op === '*') return acc * parseFloat(next as any);
+                    if (op === '/') return acc / parseFloat(next as any);
+                    if (op === '+') return acc + parseFloat(next as any);
+                    if (op === '-') return acc - parseFloat(next as any);
+
+                    return acc;
+                }, first as number),
+                'term'
+            );
+
+            it('should parse expression', () => {
+                assert.equal(onia('1 * 1', expression), 1);
+                assert.equal(onia('0.5 * 1', expression), 0.5);
+                assert.equal(onia('123 + 321', expression), 444);
+                assert.equal(onia('5 / (2 + 3)', expression), 1);
+                assert.equal(onia('(2 * (3 + 4)) - (5 / (2 + 3))', expression), 13);
+            });
+
+            it('should return NaN', () => {
+                const result = onia('foo / bar', expression);
+                assert.ok(isNaN(result));
+            });
         });
     });
 });

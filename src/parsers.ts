@@ -126,6 +126,23 @@ export function optional<T> (parser: Parser<T>, carry = true, expected?: string)
     });
 }
 
+export function lazy<T>(factory: () => Parser<T>, expected?: string): Parser<T> {
+    let parser: Parser<T> | null = null;
+
+    const lazy = (context: Context): Result<T> => {
+        if (!parser) {
+            parser = factory();
+        }
+
+        return parser(context);
+    };
+
+    return define(lazy, {
+        name: '[Parser lazy]',
+        expected,
+    });
+}
+
 /**
  *
  * @param parser
