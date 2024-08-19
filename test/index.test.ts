@@ -13,7 +13,7 @@ import onia, {
     success,
 } from '../src';
 import {assertFailure, assertSuccess} from './utils';
-import {Context, Failure, Parser, Result, Success} from "../types";
+import {Context, Failure, Parser, Result, Success} from "../src";
 
 describe('onia', () => {
     const foo = alpha('foo', 'foo');
