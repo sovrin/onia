@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://github.com/sovrin/onia" target="_blank"><img src="/doc/logo.png" width="201" alt="onia Logo"/></a>
+    <a href="https://github.com/sovrin/onia" target="_blank"><img src="https://raw.githubusercontent.com/sovrin/onia/master/doc/logo.png" width="201" alt="onia Logo"/></a>
 </p>
 
 <p align="center">
