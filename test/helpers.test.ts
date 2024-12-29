@@ -15,6 +15,7 @@ import {
     regex,
     sequence,
     shift,
+    zip,
 } from '../src';
 import {assertSuccess} from './utils';
 
@@ -205,10 +206,12 @@ describe('onia', () => {
             });
 
             it('should filter out braces and ignore order', () => {
+                const optionalHashtag = optional(hashtag, false);
+
                 const parser = map(
                     sequence([
                         open,
-                        optional(alpha('#')),
+                        optionalHashtag,
                         string,
                         close,
                     ]),
@@ -218,7 +221,6 @@ describe('onia', () => {
                         hashtag
                     ]),
                 );
-
                 assertSuccess(parser({index: 0, text: '{foobar}'}), ['foobar']);
             });
 
@@ -291,6 +293,35 @@ describe('onia', () => {
 
                 assertSuccess(result, [[1, 2, 3]]);
             })
-        })
+        });
+
+        describe('zip', () => {
+            const string = alpha('foo');
+
+            const number = map(
+                regex(/\d/g, 'digit'),
+                int(),
+            );
+
+            const parser = map(
+                sequence([
+                    number,
+                    string,
+                    number,
+                ] as const),
+                zip((parser, value) => {
+                    if (parser === string) {
+                        value = '2';
+                    }
+
+                    return value;
+                })
+            );
+
+            const actual = parser({index: 0, text: '1foo3'});
+            const expected = [1, '2', 3];
+
+            assertSuccess(actual, expected);
+        });
     })
 });

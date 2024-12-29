@@ -418,6 +418,52 @@ describe('onia', () => {
         });
     });
 
+    describe('export', () => {
+        it('should export the used parsers', () => {
+            {
+                const result = sequence([
+                    foo,
+                    bar,
+                ]);
+
+                assert.deepEqual(result.export(), [
+                    foo,
+                    bar
+                ]);
+            }
+
+            {
+                const result = any([
+                    foo,
+                    bar,
+                ]);
+
+                assert.deepEqual(result.export(), [
+                    foo,
+                    bar
+                ]);
+            }
+
+            {
+                const result = many(foo);
+
+                assert.deepEqual(result.export(), foo);
+            }
+
+            {
+                const result = optional(foo);
+
+                assert.deepEqual(result.export(), foo);
+            }
+
+            {
+                const result = map(bar, () => {});
+
+                assert.deepEqual(result.export(), bar);
+            }
+        });
+    });
+
     describe('example', () => {
         describe('simple', () => {
             const digit = map(

@@ -56,6 +56,7 @@ export function sequence<T extends ReadonlyArray<Parser<unknown>>> (parsers: T, 
     }
 
     return define(sequence, {
+        export: () => parsers,
         name: '[Parser sequence]',
         expected,
     });
@@ -80,6 +81,7 @@ export function any<T extends ReadonlyArray<Parser<unknown>>> (parsers: T, expec
     };
 
     return define(any, {
+        export: () => parsers,
         name: '[Parser any]',
         expected,
     });
@@ -95,6 +97,7 @@ export function optional<T> (parser: Parser<T>, carry = true, expected?: string)
     );
 
     return define(optional, {
+        export: () => parser,
         name: '[Parser optional]',
         expected,
     });
@@ -120,6 +123,7 @@ export function many<T> (parser: Parser<T>, expected?: string): Parser<ReadonlyA
     };
 
     return define(many, {
+        export: () => parser,
         name: '[Parser many]',
         expected,
     });
@@ -130,11 +134,12 @@ export function map<A, B> (parser: Parser<A>, fn: (val: A) => B, expected?: stri
         const res = parser(context);
 
         return isSuccess(res)
-            ? success(res.context, fn(res.value))
+            ? success(res.context, fn.bind(parser)(res.value))
             : failure.bind(map)(res.context, [expected, res.expected]);
     };
 
     return define(map, {
+        export: () => parser,
         name: '[Parser map]',
         expected,
     });

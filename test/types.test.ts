@@ -130,7 +130,6 @@ describe('onia', () => {
         describe('helpers', () => {
             it('should pass type check', () => {
                 const foo = alpha('foo');
-                const bar = alpha('bar');
 
                 sequence([
                     optional(foo),
@@ -214,112 +213,138 @@ describe('onia', () => {
                         'foobar',
                     ])
                 )
-                assertType<string>(
-                    pipe(
-                        (v: string) => v,
-                    )('foobar')
-                )
-                assertType<number>(
-                    pipe(
-                        (v: string) => "foobar",
-                        (v) => 1,
-                    )('foobar')
-                )
-                assertType<number>(
-                    pipe(
-                        (v: string) => v,
-                        (v) => v,
-                        (v) => 2,
-                    )('foobar')
-                )
+                assertType<Parser<string>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v) => v,
+                        ),
+                    )
+                );
+                assertType<Parser<number>>(
+                    map(
+                        foo,
+                        pipe(
+                            (_v: string) => "foobar",
+                            (_v) => 1,
+                        ),
+                    )
+                );
+                assertType<Parser<number>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v: string) => v,
+                            (v) => v,
+                            (_v) => 2,
+                        ),
+                    ));
                 assertType(
-                    pipe(
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                    )('foobar')
-                )
-                assertType<number>(
-                    pipe(
-                        (v: string) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => 2,
-                    )('foobar')
-                )
-                assertType<string>(
-                    pipe(
-                        (v: string) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                    )('foobar')
-                )
-                assertType<string>(
-                    pipe(
-                        (v: string) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                    )('foobar')
-                )
-                assertType<number>(
-                    pipe(
-                        (v: string) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => 123,
-                    )('foobar')
-                )
-                assertType<string>(
-                    pipe(
-                        (v: string) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                    )('foobar')
-                )
-                assertType<unknown>(
-                    pipe(
-                        (v: string) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => 1,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                        (v) => v,
-                    )(int()('1'))
-                )
+                    map(
+                        foo,
+                        pipe(
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                        ),
+                    )
+                );
+                assertType<Parser<number>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v: string) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (_v) => 2,
+                        ),
+                    )
+                );
+                assertType<Parser<string>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v: string) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                        ),
+                    ));
+                assertType<Parser<string>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v: string) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                        ),
+                    ));
+                assertType<Parser<number>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v: string) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (_v) => 123,
+                        ),
+                    ));
+                assertType<Parser<string>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v: string) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                        ),
+                    )
+                );
+                assertType<Parser<unknown>>(
+                    map(
+                        foo,
+                        pipe(
+                            (v: string) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (_v) => 1,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                            (v) => v,
+                        )
+                    )
+                );
             })
         })
     })

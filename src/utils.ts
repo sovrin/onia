@@ -5,6 +5,7 @@ export const define = <T>(parser: T, record: Record<string, (() => unknown) | st
         const {[key]: value} = record;
 
         Object.defineProperty(parser, key, {
+            configurable: true,
             value,
         });
     }

@@ -1,4 +1,6 @@
-export type Parser<T> = (context: Context) => Result<T>;
+export type Parser<T> = ((context: Context) => Result<T>) & {
+    export?: () => Parser<T>[];
+};
 
 export type Result<T> = Success<T> | Failure;
 
