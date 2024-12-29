@@ -2,26 +2,26 @@ import {failure, success} from './responses';
 import {define, isSuccess} from './utils';
 import type {Context, Parser, Result} from './types';
 
-export function alpha (match: string, expected?: string): Parser<string> {
+export function alpha (char: string, expected?: string): Parser<string> {
     const alpha = function ({index, text}) {
-        const next = index + match.length;
+        const next = index + char.length;
 
-        return (text.substring(index, next) === match)
-            ? success({text, index: next}, match)
+        return (text.substring(index, next) === char)
+            ? success({text, index: next}, char)
             : failure.bind(alpha)({text, index}, expected);
     };
 
     return define(alpha, {
-        toString: () => match,
+        toString: () => char,
         name: '[Parser alpha]',
         expected,
     });
 }
 
-export function regex (match: RegExp, expected?: string): Parser<string> {
+export function regex (pattern: RegExp, expected?: string): Parser<string> {
     const regex = function ({index, text}) {
-        match.lastIndex = index;
-        const res = match.exec(text);
+        pattern.lastIndex = index;
+        const res = pattern.exec(text);
 
         return (res && res.index === index)
             ? success({text, index: index + res[0].length}, res[0])
@@ -29,7 +29,7 @@ export function regex (match: RegExp, expected?: string): Parser<string> {
     };
 
     return define(regex, {
-        toString: () => match.toString(),
+        toString: () => pattern.toString(),
         name: '[Parser regex]',
         expected,
     });
@@ -129,12 +129,12 @@ export function many<T> (parser: Parser<T>, expected?: string): Parser<ReadonlyA
     });
 }
 
-export function map<A, B> (parser: Parser<A>, fn: (val: A) => B, expected?: string): Parser<B> {
+export function map<A, B> (parser: Parser<A>, transform: (val: A) => B, expected?: string): Parser<B> {
     const map = function (context: Context) {
         const res = parser(context);
 
         return isSuccess(res)
-            ? success(res.context, fn.bind(parser)(res.value))
+            ? success(res.context, transform.bind(parser)(res.value))
             : failure.bind(map)(res.context, [expected, res.expected]);
     };
 

@@ -7,6 +7,8 @@ import onia, {
     lazy,
     many,
     map,
+    pipe,
+    filter,
     optional,
     regex,
     sequence,
@@ -468,7 +470,7 @@ describe('onia', () => {
         describe('simple', () => {
             const digit = map(
                 regex(/\d/g, 'digit'),
-                (digit) => parseInt(digit),
+                int(),
                 'digit'
             );
             const digits = map(
@@ -477,10 +479,20 @@ describe('onia', () => {
                 'digits'
             );
             const whitespace = alpha(' ', 'whitespace');
+            const optionalWhitespace = optional(whitespace, false);
             const operator = regex(/[+-]/g, 'operator');
+
             const expression = map(
-                sequence([digits, optional(whitespace), operator, optional(whitespace), digits] as const),
-                ([left, , operator, , right]) => [left, operator, right] as const,
+                sequence([
+                    digits,
+                    optionalWhitespace,
+                    operator,
+                    optionalWhitespace,
+                    digits
+                ] as const),
+                filter([
+                    optionalWhitespace
+                ]),
                 'expression'
             );
 
