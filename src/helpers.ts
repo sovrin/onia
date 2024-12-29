@@ -38,13 +38,13 @@ export const int = () => (number: string) => parseInt(number);
 export const float = () => (number: string) => parseFloat(number);
 
 export const filter = <T extends ReadonlyArray<unknown>>(values: T) => (
-    <H extends ReadonlyArray<unknown>>(haystack: H): H => {
+    <H extends ReadonlyArray<unknown>>(haystack: H): Exclude<H[number], T[number]>[] => {
         const lookup = values.map((value) => value.toString())
             .filter(Boolean);
 
         return haystack.filter((needle) => needle !== null)
             .filter((needle) => !lookup.includes(needle.toString()))
-            .filter((needle) => needle !== undefined) as unknown as H;
+            .filter((needle) => needle !== undefined) as Exclude<H[number], T[number]>[];
     }
 );
 
