@@ -1,24 +1,14 @@
-<p align="center"><a href="https://github.com/sovrin/onia" target="_blank"><img src="/doc/logo.png" width="201" alt="onia Logo"></a></p>
+<p align="center">
+    <a href="https://github.com/sovrin/onia" target="_blank"><img src="/doc/logo.png" width="201" alt="onia Logo"/></a>
+</p>
 
 <p align="center">
-    <a href="https://www.npmjs.com/package/onia">
-        <img src="https://badgen.net/npm/v/onia" alt="">
-    </a>
-    <a href="https://www.npmjs.com/package/onia">
-        <img src="https://badgen.net/npm/types/onia" alt="">
-    </a>
-    <a href="https://packagephobia.com/result?p=onia">
-        <img src="https://badgen.net/packagephobia/install/onia" alt="">
-    </a>
-    <a href="https://coveralls.io/github/sovrin/onia?branch=master">
-        <img src="https://coveralls.io/repos/github/sovrin/onia/badge.svg?branch=master" alt="">
-    </a>
-    <a href="https://snyk.io/test/github/sovrin/onia">
-        <img src="https://snyk.io/test/github/sovrin/onia/badge.svg" alt="">
-    </a>
-    <a href="LICENSE">
-        <img src="https://badgen.net/github/license/sovrin/onia" alt="">
-    </a>
+    <a href="https://www.npmjs.com/package/onia"><img src="https://badgen.net/npm/v/onia" alt=""></a>
+    <a href="https://www.npmjs.com/package/onia"><img src="https://badgen.net/npm/types/onia" alt=""></a>
+    <a href="https://packagephobia.com/result?p=onia"><img src="https://badgen.net/packagephobia/install/onia" alt=""></a>
+    <a href="https://coveralls.io/github/sovrin/onia?branch=master"><img src="https://coveralls.io/repos/github/sovrin/onia/badge.svg?branch=master" alt=""></a>
+    <a href="https://snyk.io/test/github/sovrin/onia"><img src="https://snyk.io/test/github/sovrin/onia/badge.svg" alt=""></a>
+    <a href="LICENSE"><img src="https://badgen.net/github/license/sovrin/onia" alt=""></a>
 </p>
 
 ## About
