@@ -1,6 +1,6 @@
 {
   "name": "onia",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "small set of monadic parser combinators",
   "main": "./dist/index.js",
   "types": "./types/index.d.ts",
