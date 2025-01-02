@@ -7,7 +7,6 @@ import onia, {
     lazy,
     many,
     map,
-    pipe,
     filter,
     optional,
     regex,
@@ -492,7 +491,7 @@ describe('onia', () => {
                 ] as const),
                 filter([
                     optionalWhitespace
-                ]),
+                ] as const),
                 'expression'
             );
 

@@ -205,6 +205,19 @@ describe('onia', () => {
                 assertSuccess(parser({index: 0, text: '{foobar}'}), ['foobar']);
             });
 
+            it('should strictly filter out empty values', () => {
+                const parser = map(
+                    sequence([
+                        optional(open),
+                        optional(hashtag),
+                        string,
+                        optional(close),
+                    ]),
+                    filter([], true),
+                );
+                assertSuccess(parser({index: 0, text: 'foobar'}), ['foobar']);
+            })
+
             it('should filter out braces and ignore order', () => {
                 const optionalHashtag = optional(hashtag, false);
 
@@ -252,7 +265,7 @@ describe('onia', () => {
                                     pipe(
                                         filter([
                                             delimiter,
-                                        ]),
+                                        ] as const, true),
                                         pop(),
                                     ),
                                 ),

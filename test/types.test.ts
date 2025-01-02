@@ -199,9 +199,8 @@ describe('onia', () => {
                 )
                 assertType<string[]>(
                     filter([
-
                         'foobar',
-                    ])([
+                    ] as const)([
                         'foobar'
                     ])
                 )
@@ -209,7 +208,7 @@ describe('onia', () => {
                     filter([
                         123,
                         'foobar',
-                    ])([
+                    ] as const)([
                         'foobar',
                     ])
                 )

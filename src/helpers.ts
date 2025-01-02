@@ -13,6 +13,15 @@ type FlattenArray<T extends ReadonlyArray<unknown>> = Array<PickValue<T[number]>
 
 type PipeFunction<A, B> = (this: Parser<A>, arg: A) => B;
 
+type ExcludeValues<T extends readonly unknown[], U extends readonly unknown[]> =
+    T extends readonly (infer A)[]
+        ? U extends readonly (infer B)[]
+            ? A extends B
+                ? never
+                : A
+            : never
+        : never;
+
 export const flatten = () => <T extends ReadonlyArray<unknown>>(haystack: T): FlattenArray<T> => haystack.flat(1) as FlattenArray<T>;
 
 export const pop = () => <T extends ReadonlyArray<unknown>>(haystack: T): LastElement<T> => haystack.at(-1) as LastElement<T>;
@@ -37,14 +46,22 @@ export const int = () => (number: string) => parseInt(number);
 
 export const float = () => (number: string) => parseFloat(number);
 
-export const filter = <T extends ReadonlyArray<unknown>>(values: T) => (
-    <H extends ReadonlyArray<unknown>>(haystack: H): Exclude<H[number], T[number]>[] => {
-        const lookup = values.map((value) => value.toString())
-            .filter(Boolean);
+export const filter = <T extends readonly (Parser<unknown> | unknown)[]>(values: T, strict: boolean = false) => (
+    <H extends readonly unknown[]>(haystack: H): ExcludeValues<H, T>[] => {
+        const lookupTable = values.map((value) => {
+            if (typeof value === 'function') {
+                return value.toString();
+            }
 
-        return haystack.filter((needle) => needle !== null)
-            .filter((needle) => !lookup.includes(needle.toString()))
-            .filter((needle) => needle !== undefined) as Exclude<H[number], T[number]>[];
+            return value;
+        });
+
+        let result = haystack.filter((item) => !lookupTable.includes(item)) as ExcludeValues<H, T>[];
+        if (strict) {
+            return result.filter(Boolean);
+        }
+
+        return result;
     }
 );
 
