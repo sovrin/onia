@@ -113,18 +113,18 @@ const result = parser({index: 0, text: '123abc'});
 // result === '123'
 ```
 
-### `sequence(parsers: readonly Parser<any>[], expected?: string): Parser<any[]>`
+### `sequence(parsers: readonly Parser<T>[], expected?: string): Parser<T[]>`
 
 Creates a parser that matches a sequence of parsers.
 
 **Parameters:**
 
-- `parsers` (readonly Parser<any>[]): The parsers to match in sequence.
+- `parsers` (readonly Parser<T>[]): The parsers to match in sequence.
 - `expected` (string, optional): The name of the expected parser.
 
 **Returns:**
 
-- `Parser<any[]>`: A parser that matches the sequence of input parsers.
+- `Parser<T[]>`: A parser that matches the sequence of input parsers.
 
 **Example:**
 
@@ -134,18 +134,18 @@ const result = parser({index: 0, text: 'abc'});
 // result === ['a', 'b', 'c']
 ```
 
-### `any(parsers: readonly Parser<any>[], expected?: string): Parser<any>`
+### `any(parsers: readonly Parser<T>[], expected?: string): Parser<T>`
 
 Creates a parser that matches any one of the provided parsers.
 
 **Parameters:**
 
-- `parsers` (readonly Parser<any>[]): The parsers to match.
+- `parsers` (readonly Parser<T>[]): The parsers to match.
 - `expected` (string, optional): The name of the expected parser.
 
 **Returns:**
 
-- `Parser<any>`: A parser that matches any one of the input parsers.
+- `Parser<T>`: A parser that matches any one of the input parsers.
 
 **Example:**
 
@@ -363,7 +363,7 @@ const result = filterValues(['a', 'b', 'c', 'd']);
 // result === ['c', 'd']
 ```
 
-### `pipe(...fns: Array<Function>): Function`
+### `pipe(...fns: Function[]): Function`
 
 Composes multiple functions into a single function.
 
