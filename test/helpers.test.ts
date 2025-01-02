@@ -232,7 +232,7 @@ describe('onia', () => {
                         '{',
                         close,
                         hashtag
-                    ] as const),
+                    ] as const, true),
                 );
                 assertSuccess(parser({index: 0, text: '{foobar}'}), ['foobar']);
             });

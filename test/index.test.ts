@@ -491,7 +491,7 @@ describe('onia', () => {
                 ] as const),
                 filter([
                     optionalWhitespace
-                ] as const),
+                ] as const, true),
                 'expression'
             );
 

@@ -15,7 +15,6 @@ const serialize = (value): string => JSON.stringify(value);
 export const assertSuccess = <T>(result: Result<T>, expect: T) => {
     assert.ok(result.success === true, 'Expected result to be successful');
     assert.equal(serialize(result.value), serialize(expect), 'Expected values to be equal');
-    assert.equal(expect && expect.toString(), expect.toString(), 'Expected string representations to be equal');
 };
 
 /**

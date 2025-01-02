@@ -351,15 +351,20 @@ const result = parseFloat('123.45');
 // result === 123.45
 ```
 
-### `filter(values: T): (haystack: H) => H`
+### `filter(values: T, strict: boolean = false): (haystack: H) => H`
 
 Filters out specified values from an array.
+
+**Parameters:**
+
+- `values` (T): Values to filter out.
+- `strict` (boolean, optional): Filter falsy values out.
 
 **Example:**
 
 ```ts
 const filterValues = filter([alpha('a'), 'b']);
-const result = filterValues(['a', 'b', 'c', 'd']);
+const result = filterValues(['a', 'b', null, 'c', 'd'] as const, true);
 // result === ['c', 'd']
 ```
 
