@@ -61,7 +61,7 @@ const expression = map(
     ] as const),
     filter([
         optionalWhitespace
-    ]),
+    ] as const, true),
     'expression'
 );
 
