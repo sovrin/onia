@@ -188,7 +188,7 @@ describe('onia', () => {
             const unused = alpha('_');
             const hashtag = alpha('#');
 
-            it('should filter out braces', () => {
+            it('should filter out strings and parsers', () => {
                 const parser = map(
                     sequence([
                         open,
@@ -199,7 +199,7 @@ describe('onia', () => {
                         '{',
                         close,
                         unused
-                    ]),
+                    ] as const),
                 );
 
                 assertSuccess(parser({index: 0, text: '{foobar}'}), ['foobar']);
@@ -232,7 +232,7 @@ describe('onia', () => {
                         '{',
                         close,
                         hashtag
-                    ]),
+                    ] as const),
                 );
                 assertSuccess(parser({index: 0, text: '{foobar}'}), ['foobar']);
             });
@@ -275,9 +275,11 @@ describe('onia', () => {
                     ]),
                     pipe(
                         filter([
-                            open,
-                            close,
-                        ]),
+                                open,
+                                close,
+                            ] as const,
+                            true
+                        ),
                         flatten(),
                     )
                 );
